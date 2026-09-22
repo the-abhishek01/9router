@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { getSettings } from "@/lib/localDb";
 import bcrypt from "bcryptjs";
-import { cookies } from "next/headers";
 import { setDashboardAuthCookie } from "@/lib/auth/dashboardSession";
 import { isOidcConfigured } from "@/lib/auth/oidc";
-import { isSamlConfigured } from "@/lib/auth/saml.js";
+import { isSamlConfigured } from "@/lib/auth/saml";
 import { checkLock, recordFail, recordSuccess, getClientIp } from "@/lib/auth/loginLimiter";
 import { isLocalRequest } from "@/dashboardGuard";
+
+export const dynamic = "force-dynamic";
 
 const RESET_HINT = "Forgot password? Reset to default via 9Router CLI → Settings → Reset Password to Default.";
 const NO_STORE_HEADERS = { "Cache-Control": "no-store" };
@@ -87,10 +88,10 @@ export async function POST(request) {
         );
       }
 
-      const cookieStore = await cookies();
-      await setDashboardAuthCookie(cookieStore, request);
+      const response = NextResponse.json({ success: true, mustChangePassword: false }, { headers: NO_STORE_HEADERS });
+      await setDashboardAuthCookie(response.cookies, request);
 
-      return NextResponse.json({ success: true, mustChangePassword: false }, { headers: NO_STORE_HEADERS });
+      return response;
     }
 
     const { remainingBeforeLock } = recordFail(ip);

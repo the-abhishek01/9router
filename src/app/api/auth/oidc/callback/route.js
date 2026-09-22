@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import {
   exchangeOidcCode,
   fetchOidcDiscovery,
@@ -17,6 +16,20 @@ function clearOidcCookies(cookieStore) {
   cookieStore.delete("oidc_code_verifier");
 }
 
+function getCookie(request, name) {
+  if (!request) return null;
+  const fromCookies = request?.cookies?.get?.(name)?.value;
+  if (fromCookies !== undefined && fromCookies !== null) return fromCookies;
+  const cookieHeader = request?.headers?.get?.("cookie");
+  if (cookieHeader) {
+    const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+    if (match) return decodeURIComponent(match[1]);
+  }
+  return null;
+}
+
+export const dynamic = "force-dynamic";
+
 export async function GET(request) {
   const url = new URL(request.url);
   const error = url.searchParams.get("error");
@@ -30,21 +43,22 @@ export async function GET(request) {
     return NextResponse.redirect(new URL("/login?error=oidc_missing_code", getPublicOrigin(request)));
   }
 
-  const cookieStore = await cookies();
-  const storedState = cookieStore.get("oidc_state")?.value;
-  const storedNonce = cookieStore.get("oidc_nonce")?.value;
-  const codeVerifier = cookieStore.get("oidc_code_verifier")?.value;
+  const storedState = getCookie(request, "oidc_state");
+  const storedNonce = getCookie(request, "oidc_nonce");
+  const codeVerifier = getCookie(request, "oidc_code_verifier");
 
   if (!storedState || !storedNonce || !codeVerifier || storedState !== state) {
-    clearOidcCookies(cookieStore);
-    return NextResponse.redirect(new URL("/login?error=oidc_invalid_state", getPublicOrigin(request)));
+    const redirectRes = NextResponse.redirect(new URL("/login?error=oidc_invalid_state", getPublicOrigin(request)));
+    clearOidcCookies(redirectRes.cookies);
+    return redirectRes;
   }
 
   try {
     const config = await getOidcRuntimeConfig();
     if (!config) {
-      clearOidcCookies(cookieStore);
-      return NextResponse.redirect(new URL("/login?error=oidc_not_configured", getPublicOrigin(request)));
+      const redirectRes = NextResponse.redirect(new URL("/login?error=oidc_not_configured", getPublicOrigin(request)));
+      clearOidcCookies(redirectRes.cookies);
+      return redirectRes;
     }
 
     const discovery = await fetchOidcDiscovery(config.issuerUrl);
@@ -71,17 +85,19 @@ export async function GET(request) {
       nonce: storedNonce,
     });
 
-    clearOidcCookies(cookieStore);
-    await setDashboardAuthCookie(cookieStore, request, {
+    const successRes = NextResponse.redirect(new URL("/dashboard", getPublicOrigin(request)));
+    clearOidcCookies(successRes.cookies);
+    await setDashboardAuthCookie(successRes.cookies, request, {
       oidc: true,
       oidcSub: payload.sub || null,
       oidcEmail: pickOidcEmail(payload) || null,
       oidcName: pickOidcDisplayName(payload),
     });
 
-    return NextResponse.redirect(new URL("/dashboard", getPublicOrigin(request)));
+    return successRes;
   } catch (error) {
-    clearOidcCookies(cookieStore);
-    return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error.message || "oidc_callback_failed")}`, getPublicOrigin(request)));
+    const errRes = NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error.message || "oidc_callback_failed")}`, getPublicOrigin(request)));
+    clearOidcCookies(errRes.cookies);
+    return errRes;
   }
 }

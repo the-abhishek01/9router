@@ -2,14 +2,34 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getSettings } from "@/lib/localDb";
 import { isOidcConfigured } from "@/lib/auth/oidc";
-import { isSamlConfigured } from "@/lib/auth/saml.js";
+import { isSamlConfigured } from "@/lib/auth/saml";
 import { getDashboardAuthSession } from "@/lib/auth/dashboardSession";
 
-export async function GET() {
+export const dynamic = "force-dynamic";
+
+function getCookie(request, name) {
+  if (!request) return null;
+  const fromCookies = request?.cookies?.get?.(name)?.value;
+  if (fromCookies !== undefined && fromCookies !== null) return fromCookies;
+  const cookieHeader = request?.headers?.get?.("cookie");
+  if (cookieHeader) {
+    const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+    if (match) return decodeURIComponent(match[1]);
+  }
+  return null;
+}
+
+export async function GET(request) {
   try {
+    let authToken = getCookie(request, "auth_token");
+    if (!authToken && !request) {
+      try {
+        const cookieStore = await cookies();
+        authToken = cookieStore?.get?.("auth_token")?.value;
+      } catch {}
+    }
     const settings = await getSettings();
-    const cookieStore = await cookies();
-    const session = await getDashboardAuthSession(cookieStore.get("auth_token")?.value);
+    const session = await getDashboardAuthSession(authToken);
     const requireLogin = settings.requireLogin !== false;
     const authMode = settings.authMode || "password";
     const ssoType = settings.ssoType || "oidc";

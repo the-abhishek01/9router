@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { getSettings } from "@/lib/localDb";
-import { buildSamlAuthorizeUrl, getSamlBaseUrl, isSamlConfigured } from "@/lib/auth/saml.js";
+import { buildSamlAuthorizeUrl, getSamlBaseUrl, isSamlConfigured } from "@/lib/auth/saml";
 import { shouldUseSecureCookie } from "@/lib/auth/dashboardSession";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request) {
   const settings = await getSettings();
@@ -14,16 +15,18 @@ export async function GET(request) {
 
     const { authorizeUrl, requestId } = await buildSamlAuthorizeUrl(request, settings);
 
-    const cookieStore = await cookies();
-    cookieStore.set("saml_state", requestId, {
+    const cookieOptions = {
       httpOnly: true,
       secure: shouldUseSecureCookie(request),
       sameSite: "lax",
       path: "/",
       maxAge: 10 * 60,
-    });
+    };
 
-    return NextResponse.redirect(authorizeUrl);
+    const response = NextResponse.redirect(authorizeUrl);
+    response.cookies.set("saml_state", requestId, cookieOptions);
+
+    return response;
   } catch (error) {
     return NextResponse.redirect(
       new URL(`/login?error=${encodeURIComponent(error.message || "saml_start_failed")}`, origin)

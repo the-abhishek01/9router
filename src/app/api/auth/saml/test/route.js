@@ -1,21 +1,33 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { getSettings } from "@/lib/localDb";
-import { formatX509Certificate } from "@/lib/auth/saml.js";
+import { formatX509Certificate } from "@/lib/auth/saml";
 import { verifyDashboardAuthToken } from "@/lib/auth/dashboardSession";
 
-async function canAccessTestRoute() {
+export const dynamic = "force-dynamic";
+
+function getCookie(request, name) {
+  if (!request) return null;
+  const fromCookies = request?.cookies?.get?.(name)?.value;
+  if (fromCookies !== undefined && fromCookies !== null) return fromCookies;
+  const cookieHeader = request?.headers?.get?.("cookie");
+  if (cookieHeader) {
+    const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+    if (match) return decodeURIComponent(match[1]);
+  }
+  return null;
+}
+
+async function canAccessTestRoute(request) {
   const settings = await getSettings();
   if (settings.requireLogin === false) return true;
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get("auth_token")?.value;
+  const token = getCookie(request, "auth_token");
   return await verifyDashboardAuthToken(token);
 }
 
 export async function POST(request) {
   try {
-    if (!(await canAccessTestRoute())) {
+    if (!(await canAccessTestRoute(request))) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

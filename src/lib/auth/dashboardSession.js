@@ -30,6 +30,22 @@ export function shouldUseSecureCookie(request) {
   return forceSecureCookie || isHttpsRequest;
 }
 
+export function getCookieFromRequest(request, name) {
+  if (!request) return null;
+  const fromCookies = request?.cookies?.get?.(name)?.value;
+  if (fromCookies !== undefined && fromCookies !== null) return fromCookies;
+  const cookieHeader = request?.headers?.get?.("cookie");
+  if (cookieHeader) {
+    const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+    if (match) return decodeURIComponent(match[1]);
+  }
+  return null;
+}
+
+export function getAuthTokenFromRequest(request) {
+  return getCookieFromRequest(request, "auth_token");
+}
+
 export async function createDashboardAuthToken(claims = {}) {
   return new SignJWT({ authenticated: true, ...claims })
     .setProtectedHeader({ alg: "HS256" })

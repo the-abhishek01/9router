@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { getSettings } from "@/lib/localDb";
 import {
   getSamlBaseUrl,
@@ -7,9 +6,23 @@ import {
   pickSamlDisplayName,
   pickSamlEmail,
   validateSamlResponse,
-} from "@/lib/auth/saml.js";
+} from "@/lib/auth/saml";
 import { setDashboardAuthCookie } from "@/lib/auth/dashboardSession";
 import { checkLock, recordFail, recordSuccess, getClientIp } from "@/lib/auth/loginLimiter";
+
+export const dynamic = "force-dynamic";
+
+function getCookie(request, name) {
+  if (!request) return null;
+  const fromCookies = request?.cookies?.get?.(name)?.value;
+  if (fromCookies !== undefined && fromCookies !== null) return fromCookies;
+  const cookieHeader = request?.headers?.get?.("cookie");
+  if (cookieHeader) {
+    const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+    if (match) return decodeURIComponent(match[1]);
+  }
+  return null;
+}
 
 export async function POST(request) {
   const settings = await getSettings();
@@ -26,11 +39,7 @@ export async function POST(request) {
     );
   }
 
-  const cookieStore = await cookies();
-  const storedRequestId = cookieStore.get("saml_state")?.value || "";
-
-  // Always clear saml_state cookie after attempt
-  cookieStore.delete("saml_state");
+  const storedRequestId = getCookie(request, "saml_state") || "";
 
   try {
     const formData = await request.formData();
@@ -38,12 +47,16 @@ export async function POST(request) {
 
     if (!SAMLResponse) {
       recordFail(ip);
-      return NextResponse.redirect(new URL("/login?error=saml_missing_response", origin));
+      const res = NextResponse.redirect(new URL("/login?error=saml_missing_response", origin));
+      res.cookies.delete("saml_state");
+      return res;
     }
 
     if (!isSamlConfigured(settings)) {
       recordFail(ip);
-      return NextResponse.redirect(new URL("/login?error=saml_not_configured", origin));
+      const res = NextResponse.redirect(new URL("/login?error=saml_not_configured", origin));
+      res.cookies.delete("saml_state");
+      return res;
     }
 
     const profile = await validateSamlResponse(request, { SAMLResponse }, storedRequestId, settings);
@@ -53,17 +66,21 @@ export async function POST(request) {
 
     recordSuccess(ip);
 
-    await setDashboardAuthCookie(cookieStore, request, {
+    const redirectRes = NextResponse.redirect(new URL("/dashboard", origin));
+    redirectRes.cookies.delete("saml_state");
+    await setDashboardAuthCookie(redirectRes.cookies, request, {
       saml: true,
       samlEmail,
       samlName,
     });
 
-    return NextResponse.redirect(new URL("/dashboard", origin));
+    return redirectRes;
   } catch (error) {
     recordFail(ip);
-    return NextResponse.redirect(
+    const errRes = NextResponse.redirect(
       new URL(`/login?error=${encodeURIComponent(error.message || "saml_acs_failed")}`, origin)
     );
+    errRes.cookies.delete("saml_state");
+    return errRes;
   }
 }

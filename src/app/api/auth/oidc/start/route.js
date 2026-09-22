@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import {
   buildOidcAuthorizationUrl,
   createOidcNonce,
@@ -10,6 +9,8 @@ import {
   getPublicOrigin,
 } from "@/lib/auth/oidc";
 import { shouldUseSecureCookie } from "@/lib/auth/dashboardSession";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request) {
   try {
@@ -33,7 +34,6 @@ export async function GET(request) {
       codeChallenge: challenge,
     });
 
-    const cookieStore = await cookies();
     const baseOptions = {
       httpOnly: true,
       secure: shouldUseSecureCookie(request),
@@ -41,11 +41,13 @@ export async function GET(request) {
       path: "/",
       maxAge: 10 * 60,
     };
-    cookieStore.set("oidc_state", state, baseOptions);
-    cookieStore.set("oidc_nonce", nonce, baseOptions);
-    cookieStore.set("oidc_code_verifier", verifier, baseOptions);
 
-    return NextResponse.redirect(authUrl);
+    const response = NextResponse.redirect(authUrl);
+    response.cookies.set("oidc_state", state, baseOptions);
+    response.cookies.set("oidc_nonce", nonce, baseOptions);
+    response.cookies.set("oidc_code_verifier", verifier, baseOptions);
+
+    return response;
   } catch (error) {
     return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error.message || "oidc_start_failed")}`, getPublicOrigin(request)));
   }
