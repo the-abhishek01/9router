@@ -41,7 +41,7 @@ export async function handleSystemoneCore({
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(cfg.headers || {}),
     // Zen lanes expect the official client session header on every request.
-    "x-opencode-session": generateSessionId(),
+    ...(provider.includes("opencode") ? { "x-opencode-session": generateSessionId() } : {}),
   };
   const requestBody = { ...body, model };
 

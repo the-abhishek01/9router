@@ -127,6 +127,7 @@ import p121 from "./alitp-intl.js";
 import p122 from "./xquik.js";
 import p126 from "./gemini-web.js";
 import p125 from "./oxalpha-web.js";
+import p127 from "./jev-ai.js";
 
 export default [
   p0,
@@ -255,4 +256,5 @@ export default [
   p122,
   p126,
   p125,
+  p127,
 ];
