@@ -308,7 +308,7 @@ export async function clearAccountError(connectionId, currentConnection, model =
     if (model && k === `modelLock_${model}`) return true; // succeeded model
     if (model && k === "modelLock___all") return true;    // account-level lock
     const expiry = conn[k];
-    return expiry && new Date(expiry).getTime() <= now;   // expired
+    return expiry && new Date(expiry).getTime() < now;   // expired
   });
 
   if (keysToClear.length === 0 && conn.testStatus !== "unavailable" && !conn.lastError) return;

@@ -51,6 +51,7 @@ source/*
 .cursor/*
 docs/*
 !docs/ARCHITECTURE.md
+!docs/gemini-web.md
 test/*
 open-sse/test/*
 RM.vn.md
@@ -101,3 +102,15 @@ graphify-out/*
 .start-dev.ps1
 start-dev-silent.cjs
 debug.log
+
+# Ruflo local secrets and runtime data
+.env
+.env.local
+.env.*.local
+.claude-flow/
+.agents/
+.swarm/
+.mcp.json
+ruvector.db
+scratch/
+tools/

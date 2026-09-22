@@ -544,6 +544,75 @@ export async function POST(request) {
           break;
         }
 
+        case "gemini-web": {
+          // Zero-auth provider: anonymous mode needs no cookie at all.
+          const cookie = String(apiKey || "").trim().replace(/^cookie\s*:\s*/i, "").replace(/^cookie\s*=\s*/i, "");
+          if (!cookie) {
+            isValid = true;
+            break;
+          }
+          // Cookie present: probe gemini.google.com/app with it; non-4xx = accepted.
+          try {
+            const res = await fetch("https://gemini.google.com/app", {
+              method: "GET",
+              headers: {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                Cookie: cookie,
+              },
+            });
+            if (res.status < 400) {
+              isValid = true;
+            } else {
+              error = "Cookie rejected by gemini.google.com — re-paste the Cookie header value (DevTools → Network → any request → Cookie), or clear it for anonymous access";
+            }
+          } catch (e) {
+            error = `Could not reach gemini.google.com: ${e.message || e}`;
+          }
+          break;
+        }
+
+        case "oxalpha-web":
+        case "oxalpha": {
+          // Zero-auth provider: anonymous mode needs no cookie at all.
+          const cookie = String(apiKey || "").trim().replace(/^cookie\s*:\s*/i, "").replace(/^cookie\s*=\s*/i, "");
+          if (!cookie) {
+            try {
+              const res = await fetch("https://oxalpha.com/chat", {
+                method: "GET",
+                headers: {
+                  "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+                },
+              });
+              if (res.status < 400) {
+                isValid = true;
+              } else {
+                error = `Could not reach oxalpha.com (status ${res.status})`;
+              }
+            } catch (e) {
+              error = `Could not reach oxalpha.com: ${e.message || e}`;
+            }
+            break;
+          }
+          // Cookie present: probe https://oxalpha.com/chat with it
+          try {
+            const res = await fetch("https://oxalpha.com/chat", {
+              method: "GET",
+              headers: {
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+                Cookie: cookie,
+              },
+            });
+            if (res.status < 400) {
+              isValid = true;
+            } else {
+              error = "Cookie rejected by oxalpha.com — re-paste your session cookie, or clear it for anonymous access";
+            }
+          } catch (e) {
+            error = `Could not reach oxalpha.com: ${e.message || e}`;
+          }
+          break;
+        }
+
         case "perplexity-web": {
           let sessionToken = apiKey;
           if (sessionToken.startsWith("__Secure-next-auth.session-token=")) {

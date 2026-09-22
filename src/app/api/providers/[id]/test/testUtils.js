@@ -744,6 +744,45 @@ async function testApiKeyConnection(connection, effectiveProxy = null) {
         const valid = res.status !== 401 && res.status !== 403;
         return { valid, error: valid ? null : "Invalid SSO cookie" };
       }
+      case "gemini-web": {
+        // Zero-auth provider: anonymous mode needs no cookie at all.
+        const cookie = String(connection.apiKey || "").trim()
+          .replace(/^cookie\s*:\s*/i, "")
+          .replace(/^cookie\s*=\s*/i, "");
+        if (!cookie) return { valid: true, error: null };
+        const res = await fetchWithConnectionProxy("https://gemini.google.com/app", {
+          headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            Cookie: cookie,
+          },
+        }, effectiveProxy);
+        const valid = res.status < 400;
+        return { valid, error: valid ? null : "Cookie rejected — re-paste your gemini.google.com Cookie header value, or clear it for anonymous access" };
+      }
+      case "oxalpha-web":
+      case "oxalpha": {
+        // Zero-auth provider: anonymous mode needs no cookie at all.
+        const cookie = String(connection.apiKey || "").trim()
+          .replace(/^cookie\s*:\s*/i, "")
+          .replace(/^cookie\s*=\s*/i, "");
+        if (!cookie) {
+          const res = await fetchWithConnectionProxy("https://oxalpha.com/chat", {
+            headers: {
+              "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            },
+          }, effectiveProxy);
+          const valid = res.status < 400;
+          return { valid, error: valid ? null : `Could not reach oxalpha.com (status ${res.status})` };
+        }
+        const res = await fetchWithConnectionProxy("https://oxalpha.com/chat", {
+          headers: {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            Cookie: cookie,
+          },
+        }, effectiveProxy);
+        const valid = res.status < 400;
+        return { valid, error: valid ? null : "Cookie rejected — re-paste your oxalpha.com session cookie, or clear it for anonymous access" };
+      }
       case "perplexity-web": {
         let sessionToken = connection.apiKey;
         if (sessionToken.startsWith("__Secure-next-auth.session-token=")) sessionToken = sessionToken.slice("__Secure-next-auth.session-token=".length);

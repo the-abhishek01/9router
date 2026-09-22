@@ -27,6 +27,8 @@ import ZedExecutor from "./zed.js";
 import WindsurfExecutor from "./windsurf.js";
 import { DefaultExecutor } from "./default.js";
 import { DevinCliExecutor } from "./devin-cli.js";
+import { GeminiWebExecutor } from "./gemini-web.js";
+import { OxAlphaWebExecutor } from "./oxalpha-web.js";
 
 const executors = {
   antigravity: new AntigravityExecutor(),
@@ -47,6 +49,10 @@ const executors = {
   "opencode-go": new OpenCodeGoExecutor(),
   "opencode-zen": new OpenCodeZenExecutor(),
   "grok-web": new GrokWebExecutor(),
+  "gemini-web": new GeminiWebExecutor(),
+  "oxalpha-web": new OxAlphaWebExecutor(),
+  oxalpha: new OxAlphaWebExecutor(),
+  ox: new OxAlphaWebExecutor(),
   "grok-cli": new GrokCliExecutor(),
   gcli: new GrokCliExecutor(), // Alias
   gb: new GrokCliExecutor(), // Alias (Grok Build)
@@ -107,3 +113,5 @@ export { default as TraeExecutor } from "./trae.js";
 export { default as ZedExecutor } from "./zed.js";
 export { default as WindsurfExecutor } from "./windsurf.js";
 export { DevinCliExecutor } from "./devin-cli.js";
+export { GeminiWebExecutor } from "./gemini-web.js";
+export { OxAlphaWebExecutor } from "./oxalpha-web.js";

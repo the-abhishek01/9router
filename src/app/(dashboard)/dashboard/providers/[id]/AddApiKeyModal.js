@@ -13,10 +13,30 @@ export default function AddApiKeyModal({ isOpen, provider, providerName, isCompa
   const isOllamaLocal = provider === "ollama-local";
   const isCookie = authType === "cookie";
   const isXaiApiKey = provider === "xai" && !isCookie;
-  const credentialLabel = isCookie ? "Cookie Value" : provider === "qoder" || provider === "qoder-cn" ? "Personal Access Token (PAT)" : "API Key";
+  const isGeminiWeb = provider === "gemini-web";
+  const isOxAlphaWeb = provider === "oxalpha-web" || provider === "oxalpha";
+  // gemini-web and oxalpha-web work without any credential (anonymous web access).
+  const keyOptional = isOllamaLocal || isGeminiWeb || isOxAlphaWeb;
+  const credentialLabel = isCookie
+    ? isGeminiWeb || isOxAlphaWeb
+      ? "Cookie Value (optional)"
+      : "Cookie Value"
+    : provider === "qoder" || provider === "qoder-cn"
+      ? "Personal Access Token (PAT)"
+      : "API Key";
   const credentialPlaceholder = isCookie
-    ? (provider === "grok-web" ? "sso=xxxxx... or just the raw value" : "eyJhbGciOi...")
-    : (isXaiApiKey ? "xai-..." : provider === "qoder" || provider === "qoder-cn" ? "pt-..." : "");
+    ? isGeminiWeb
+      ? "Optional — paste your gemini.google.com Cookie header value, or anything like \"anon\" for anonymous access"
+      : isOxAlphaWeb
+        ? "Optional — leave blank for anonymous zero-auth access, or paste oxalpha.com cookies"
+        : provider === "grok-web"
+          ? "sso=xxxxx... or just the raw value"
+          : "eyJhbGciOi..."
+    : isXaiApiKey
+      ? "xai-..."
+      : provider === "qoder" || provider === "qoder-cn"
+        ? "pt-..."
+        : "";
 
   const isAzure = provider === "azure";
   const isCloudflareAi = provider === "cloudflare-ai";
@@ -92,7 +112,7 @@ export default function AddApiKeyModal({ isOpen, provider, providerName, isCompa
 
   const handleSubmit = async () => {
     if (!provider) return;
-    if (!isOllamaLocal && !formData.apiKey) return;
+    if (!keyOptional && !formData.apiKey) return;
     if (!isOllamaLocal) {
       // Non-ollama providers require a name
       if (!formData.name) return;
