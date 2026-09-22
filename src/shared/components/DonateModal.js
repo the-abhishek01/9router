@@ -20,7 +20,22 @@ export default function DonateModal({ isOpen, onClose }) {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
-      .then((json) => setData(json))
+      .then((json) => {
+        if (json && Array.isArray(json.channels)) {
+          json.channels = json.channels.map((ch) => {
+            if (ch.qr === "https://9router.com/images/momo.jpg" || ch.id === "momo" || ch.id === "pay") {
+              return {
+                ...ch,
+                label: ch.label === "MoMo" ? "Pay" : ch.label,
+                description: ch.description?.includes("MoMo") ? "Scan QR with payment app" : ch.description,
+                qr: "/images/pay.jpeg",
+              };
+            }
+            return ch;
+          });
+        }
+        setData(json);
+      })
       .catch((err) => setError(err.message || "Failed to load"))
       .finally(() => setLoading(false));
   }, [isOpen, data]);
