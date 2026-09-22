@@ -1,8 +1,9 @@
 {
-  "name": "9router",
+  "name": "aris",
   "version": "0.5.85",
-  "description": "9Router CLI - Start and manage 9Router server",
+  "description": "Aris CLI - Start and manage Aris server",
   "bin": {
+    "aris": "./cli.js",
     "9router": "./cli.js"
   },
   "files": [
@@ -34,6 +35,7 @@
     "node": ">=18.0.0"
   },
   "keywords": [
+    "aris",
     "9router",
     "cli",
     "proxy",

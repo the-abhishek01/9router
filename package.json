@@ -1,9 +1,15 @@
 {
-  "name": "9router-app",
+  "name": "aris-app",
   "version": "0.5.85",
-  "description": "9Router web dashboard",
+  "description": "Aris web dashboard",
   "private": true,
+  "bin": {
+    "aris": "./cli/cli.js",
+    "9router": "./cli/cli.js"
+  },
   "scripts": {
+    "aris": "node cli/cli.js",
+    "start:aris": "PORT=20128 node cli/app/custom-server.js",
     "dev": "next dev --port 20127",
     "dev:webpack": "next dev --webpack --port 20127",
     "build": "next build --webpack",
