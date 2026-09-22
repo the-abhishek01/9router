@@ -168,20 +168,33 @@ function buildCliPackage() {
     console.log(`✅ Version already synced: ${cliPkg.version}\n`);
   }
 
-  // Step 1: Build app with Next.js (workspace tracing root → traced node_modules in standalone).
-  console.log("1️⃣  Building Next.js app...");
+  // Step 1: Clean old app/cli/app and build dist if exists
+  console.log("1️⃣  Cleaning old app/cli/app and build dist...");
+  if (fs.existsSync(cliAppDir)) {
+    fs.rmSync(cliAppDir, { recursive: true, force: true });
+  }
+  if (fs.existsSync(buildDistDir)) {
+    fs.rmSync(buildDistDir, { recursive: true, force: true });
+  }
+  console.log("✅ Cleaned\n");
+
+  // Step 2: Build app with Next.js (workspace tracing root → traced node_modules in standalone).
+  console.log("2️⃣  Building Next.js app...");
   try {
     execSync("npm run build", {
-      stdio: "inherit",
+      stdio: ["ignore", "inherit", "inherit"],
       cwd: appDir,
       env: {
         ...process.env,
+        NODE_OPTIONS: `${process.env.NODE_OPTIONS || ""} --max-old-space-size=4096`.trim(),
         HOME: buildHomeDir,
         USERPROFILE: buildHomeDir,
         APPDATA: path.join(buildHomeDir, "AppData", "Roaming"),
         LOCALAPPDATA: path.join(buildHomeDir, "AppData", "Local"),
         NEXT_DIST_DIR: buildDistDirName,
         NEXT_TRACING_ROOT_MODE: "workspace",
+        NEXT_TELEMETRY_DISABLED: "1",
+        CI: "1",
       }
     });
     console.log("✅ Next.js build completed\n");
@@ -189,13 +202,6 @@ function buildCliPackage() {
     console.error("❌ Next.js build failed");
     process.exit(1);
   }
-
-  // Step 2: Clean old app/cli/app if exists
-  console.log("2️⃣  Cleaning old app/cli/app...");
-  if (fs.existsSync(cliAppDir)) {
-    fs.rmSync(cliAppDir, { recursive: true, force: true });
-  }
-  console.log("✅ Cleaned\n");
 
   // Step 3: Copy Next.js standalone build to app/cli/app.
   // Newer Next.js standalone output writes server.js/package.json plus .next/, src/, and
@@ -254,6 +260,14 @@ function buildCliPackage() {
   if (fs.existsSync(betterDir)) {
     fs.rmSync(betterDir, { recursive: true, force: true });
     console.log("✅ Stripped better-sqlite3 (lives in ~/.9router/runtime)");
+  }
+
+  // Ensure next/dist/cli is present (required by next/dist/server/config-schema.js)
+  const nextCliSrc = path.join(appDir, "node_modules", "next", "dist", "cli");
+  const nextCliDest = path.join(cliAppDir, "node_modules", "next", "dist", "cli");
+  if (fs.existsSync(nextCliSrc) && !fs.existsSync(nextCliDest)) {
+    copyRecursive(nextCliSrc, nextCliDest);
+    console.log("✅ Bundled next/dist/cli");
   }
   console.log("");
 
@@ -327,8 +341,7 @@ function buildCliPackage() {
     execSync("node scripts/buildMitm.js", { stdio: "inherit", cwd: cliDir });
     console.log("✅ MITM server build completed\n");
   } catch (error) {
-    console.error("❌ MITM build failed");
-    process.exit(1);
+    console.warn("⚠️  MITM build with esbuild skipped or failed; using unbundled MITM files.\n");
   }
 
   console.log("✨ CLI package build completed!");

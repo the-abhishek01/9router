@@ -352,7 +352,7 @@ export default function ProvidersPage() {
     .filter(
       ([key, info]) =>
         !info.hidden &&
-        (info.serviceKinds ?? ["llm"]).includes("llm") &&
+        ((info.serviceKinds ?? ["llm"]).includes("llm") || (info.serviceKinds ?? []).includes("systemone")) &&
         matchSearch(info.name) &&
         matchStatus(getProviderStats(key, "apikey"), info.noAuth),
     )

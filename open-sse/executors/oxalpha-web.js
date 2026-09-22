@@ -97,6 +97,12 @@ export class OxAlphaWebExecutor extends BaseExecutor {
         // Appears to be a raw Turnstile token
         turnstileToken = userCookie;
         userCookie = null;
+      } else if (userCookie === "0" || userCookie === "none" || userCookie === "null" || userCookie === "undefined" || !userCookie.includes("=")) {
+        // Dummy placeholder entered by user, or raw token if long
+        if (userCookie.length > 30) {
+          turnstileToken = userCookie;
+        }
+        userCookie = null;
       }
     }
 
@@ -246,15 +252,16 @@ export class OxAlphaWebExecutor extends BaseExecutor {
         userMsg =
           "Ox Alpha rate check / verification required (Turnstile). Anonymous daily quota reached from this IP. Paste your oxalpha.com session cookie (DevTools → Application → Cookies) or provide a Turnstile token in credentials.";
       }
+      const httpStatus = upstreamRes.status === 428 ? 429 : upstreamRes.status;
       const errResp = new Response(
         JSON.stringify({
           error: {
             message: userMsg,
-            type: upstreamRes.status === 428 ? "turnstile_required" : "upstream_error",
-            code: upstreamRes.status,
+            type: upstreamRes.status === 428 ? "insufficient_quota" : "upstream_error",
+            code: httpStatus,
           },
         }),
-        { status: upstreamRes.status, headers: { "Content-Type": "application/json" } }
+        { status: httpStatus, headers: { "Content-Type": "application/json" } }
       );
       return { response: errResp, url: OXALPHA_API_CHAT, headers: {}, transformedBody: payload };
     }

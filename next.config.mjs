@@ -26,7 +26,11 @@ const nextConfig = {
   },
   outputFileTracingRoot: tracingRoot,
   outputFileTracingExcludes: {
-    "*": ["./gitbook/**/*"]
+    "*": [
+      "./gitbook/**/*",
+      "./cli/**/*",
+      "./.next-cli-build/**/*",
+    ]
   },
   images: {
     unoptimized: true

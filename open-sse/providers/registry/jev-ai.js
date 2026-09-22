@@ -15,15 +15,18 @@ export default {
   },
   category: "apikey",
   authType: "apikey",
-  serviceKinds: ["systemone"],
+  serviceKinds: ["llm", "systemone"],
+  transport: {
+    baseUrl: "https://jev-ai.pro/api/v1/systemone",
+  },
   systemoneConfig: {
     baseUrl: "https://jev-ai.pro/api/v1/systemone",
   },
   passthroughModels: true,
   models: [
-    { id: "jev-latest", name: "Jev Latest", kind: "systemone" },
-    { id: "jev-preview", name: "Jev Preview", kind: "systemone" },
-    { id: "jev-1.13.0", name: "Jev 1.13.0", kind: "systemone" },
-    { id: "jev-1.13", name: "Jev 1.13", kind: "systemone" },
+    { id: "jev-latest", name: "Jev Latest", kind: "systemone", kinds: ["llm", "systemone"] },
+    { id: "jev-preview", name: "Jev Preview", kind: "systemone", kinds: ["llm", "systemone"] },
+    { id: "jev-1.13.0", name: "Jev 1.13.0", kind: "systemone", kinds: ["llm", "systemone"] },
+    { id: "jev-1.13", name: "Jev 1.13", kind: "systemone", kinds: ["llm", "systemone"] },
   ],
 };
