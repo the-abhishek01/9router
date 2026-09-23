@@ -108,9 +108,39 @@ Result: Instant responses, 0 downtime, minimal cost, and 20-40% token savings.
 
 ## ⚡ Quick Start
 
-### 1. Clone & Start in 3 Steps (Recommended)
+### 🚀 One-Line Instant Install (macOS, Linux, WSL & Windows)
 
-Run the latest Aris Gateway directly from source:
+Run the one-line command for your operating system to install dependencies, configure global CLI commands (`aris` / `9router`), and immediately launch the gateway:
+
+#### 🍎 macOS / 🐧 Linux / 💻 WSL (Bash & Zsh)
+```bash
+curl -fsSL https://raw.githubusercontent.com/the-abhishek01/9router/master/install.sh | bash
+```
+*Or using wget:*
+```bash
+wget -qO- https://raw.githubusercontent.com/the-abhishek01/9router/master/install.sh | bash
+```
+
+#### 🪟 Windows (PowerShell)
+Open PowerShell and run:
+```powershell
+irm https://raw.githubusercontent.com/the-abhishek01/9router/master/install.ps1 | iex
+```
+*Or via Windows Command Prompt (CMD) with `curl.exe`:*
+```cmd
+curl.exe -fsSL https://raw.githubusercontent.com/the-abhishek01/9router/master/install.ps1 -o install.ps1 && powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+🎉 **Aris Gateway is now active!**
+- **Obsidian Dashboard**: [`http://localhost:20128/dashboard`](http://localhost:20128/dashboard)
+- **OpenAI-Compatible API**: `http://localhost:20128/v1`
+- **Global Command**: Type `aris` or `9router` anywhere in your terminal!
+
+---
+
+### 📦 Manual Clone & Run (From Source)
+
+If you prefer to clone and inspect the repository manually:
 
 ```bash
 # 1. Clone the repository
@@ -122,25 +152,8 @@ npm install
 npm run build:cli
 
 # 3. Start Aris Gateway (Port 20128)
-PORT=20128 node cli/app/custom-server.js
-# Or using the npm shortcut:
 npm run start:aris
-```
-
-🎉 **Aris Gateway is now active!**
-- **Obsidian Dashboard**: [`http://localhost:20128/dashboard`](http://localhost:20128/dashboard)
-- **OpenAI-Compatible API**: `http://localhost:20128/v1`
-
----
-
-### Alternative: Interactive CLI Menu & Daemon Control
-
-If you prefer terminal-based control, system tray integration, and daemon management:
-
-```bash
-# Start interactive CLI
-node cli/cli.js
-# Or via npm script:
+# Or start interactive CLI menu:
 npm run aris
 ```
 

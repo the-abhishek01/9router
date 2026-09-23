@@ -10,6 +10,7 @@
   "scripts": {
     "aris": "node cli/cli.js",
     "start:aris": "PORT=20128 node cli/app/custom-server.js",
+    "build:cli": "node cli/scripts/build-cli.js",
     "dev": "next dev --port 20127",
     "dev:webpack": "next dev --webpack --port 20127",
     "build": "next build --webpack",
