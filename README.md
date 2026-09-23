@@ -1,19 +1,35 @@
 <div align="center">
-  <img src="./images/9router.png?1" alt="9Router Dashboard" width="800"/>
+  <img src="./images/aris-dashboard.png" alt="Aris Obsidian Dashboard" width="850"/>
   
   # Aris Gateway (9Router) - Obsidian Hyper-Router & Web2API Gateway
   
   **Ultra-fast AI Router & Web2API Gateway. Connect all AI developer tools to 40+ providers & 100+ models with sub-millisecond connection times, automated Turnstile bypass, and zero-buffering SSE streaming.**
   
   **Universal support for Claude Code, Cursor, Antigravity, Copilot, Codex, Gemini, OpenCode, Cline, OpenClaw, and any OpenAI/Anthropic SDK.**
-  
-  [![npm](https://img.shields.io/npm/v/9router.svg)](https://www.npmjs.com/package/9router)
-  [![Downloads](https://img.shields.io/npm/dm/9router.svg)](https://www.npmjs.com/package/9router)
-  [![Docker Pulls](https://img.shields.io/docker/pulls/decolua/9router.svg?logo=docker&label=Docker%20pulls)](https://hub.docker.com/r/decolua/9router)
-  [![GHCR](https://img.shields.io/badge/GHCR-decolua%2F9router-blue?logo=github)](https://github.com/decolua/9router/pkgs/container/9router)
-  [![License](https://img.shields.io/npm/l/9router.svg)](https://github.com/decolua/9router/blob/main/LICENSE)
 
-<a href="https://trendshift.io/repositories/22628" target="_blank"><img src="https://trendshift.io/api/badge/repositories/22628" alt="decolua%2F9router | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+  <p align="center">
+    <a href="https://github.com/the-abhishek01/9router"><img src="https://img.shields.io/badge/GitHub-the--abhishek01%2F9router-181717?logo=github" alt="GitHub Repo"/></a>
+    <a href="https://github.com/the-abhishek01/9router/stargazers"><img src="https://img.shields.io/github/stars/the-abhishek01/9router?style=flat&color=yellow" alt="GitHub Stars"/></a>
+    <a href="https://github.com/the-abhishek01/9router/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"/></a>
+    <a href="http://localhost:20128"><img src="https://img.shields.io/badge/Gateway-Port%2020128-06b6d4" alt="Port 20128"/></a>
+  </p>
+
+  <p><em>Aris Obsidian Hyper-Router — Executive Dashboard & Live Routing Matrix</em></p>
+
+  <table>
+    <tr>
+      <td align="center" width="50%">
+        <img src="./images/aris-providers.png" alt="Providers & Web2API Directory" width="420"/>
+        <br/><b>⚡ 40+ Providers & Web2API Engines</b>
+      </td>
+      <td align="center" width="50%">
+        <img src="./images/aris-landing.png" alt="Architecture & Gateway Topology" width="420"/>
+        <br/><b>🌐 Obsidian Architecture & Gateway Topology</b>
+      </td>
+    </tr>
+  </table>
+
+  <br/>
 
 [🚀 Quick Start](#-quick-start) • [⚡ Performance](#-performance--latency-benchmarks) • [💡 Features](#-key-features) • [📖 Setup](#-setup-guide) • [🌐 Website](https://9router.com)
 
@@ -92,45 +108,95 @@ Result: Instant responses, 0 downtime, minimal cost, and 20-40% token savings.
 
 ## ⚡ Quick Start
 
-**1. Install globally:**
+### 1. Clone & Start in 3 Steps (Recommended)
+
+Run the latest Aris Gateway directly from source:
 
 ```bash
-npm install -g 9router
-9router
-```
-
-🎉 Dashboard opens at `http://localhost:20128`
-
-**2. Connect a FREE provider (no signup needed):**
-
-Dashboard → Providers → Connect **Kiro AI** (~50 credits/month free: Claude 4.5 + GLM-5 + MiniMax) or **OpenCode Free** (no auth) → Done!
-
-**3. Use in your CLI tool:**
-
-```
-Claude Code/Codex/OpenClaw/Cursor/Cline Settings:
-  Endpoint: http://localhost:20128/v1
-  API Key: [copy from dashboard]
-  Model: kr/claude-sonnet-4.5
-```
-
-**That's it!** Start coding with FREE AI models.
-
-**Run from source (this repository):**
-
-```bash
+# 1. Clone the repository
 git clone https://github.com/the-abhishek01/9router.git
 cd 9router
-cp .env.example .env
+
+# 2. Install dependencies & build standalone package
 npm install
 npm run build:cli
+
+# 3. Start Aris Gateway (Port 20128)
 PORT=20128 node cli/app/custom-server.js
+# Or using the npm shortcut:
+npm run start:aris
 ```
 
-Or start development mode:
+🎉 **Aris Gateway is now active!**
+- **Obsidian Dashboard**: [`http://localhost:20128/dashboard`](http://localhost:20128/dashboard)
+- **OpenAI-Compatible API**: `http://localhost:20128/v1`
+
+---
+
+### Alternative: Interactive CLI Menu & Daemon Control
+
+If you prefer terminal-based control, system tray integration, and daemon management:
+
+```bash
+# Start interactive CLI
+node cli/cli.js
+# Or via npm script:
+npm run aris
+```
+
+To link and run `aris` globally from anywhere:
+```bash
+npm link
+aris
+```
+
+---
+
+### 2. Connect a FREE Provider (No Signup Needed)
+
+1. Open **Dashboard** → **Providers** ([`http://localhost:20128/dashboard/providers`](http://localhost:20128/dashboard/providers))
+2. Toggle on **OpenCode Free** (Zero-auth instant AI) or connect **Kiro AI** (~50 free monthly credits: Claude 4.5 + GLM-5 + MiniMax) or **Ox Alpha Web**.
+3. Copy your local gateway API key from the Dashboard header.
+
+---
+
+### 3. Use in Your AI Developer Tools
+
+Point any coding agent or IDE extension to your local Aris endpoint:
+
+#### Claude Code
+```bash
+export ANTHROPIC_BASE_URL="http://localhost:20128/v1"
+export ANTHROPIC_API_KEY="your-aris-api-key"
+claude
+```
+
+#### Codex / Cursor / Cline / OpenClaw
+```json
+{
+  "apiBase": "http://localhost:20128/v1",
+  "apiKey": "your-aris-api-key",
+  "model": "kr/claude-sonnet-4.5"
+}
+```
+
+#### Antigravity / Gemini CLI
+```bash
+export OPENAI_BASE_URL="http://localhost:20128/v1"
+export OPENAI_API_KEY="your-aris-api-key"
+```
+
+**That's it!** Instant responses, zero-downtime auto-fallback, and 20-40% token savings.
+
+---
+
+### Development Mode
+
+To start the Next.js development server with hot-reloading:
 
 ```bash
 PORT=20128 NEXT_PUBLIC_BASE_URL=http://localhost:20128 npm run dev
+```
 ```
 
 Production mode:
