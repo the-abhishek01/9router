@@ -31,11 +31,27 @@
 
   <br/>
 
-[🚀 Quick Start](#-quick-start) • [⚡ Performance](#-performance--latency-benchmarks) • [💡 Features](#-key-features) • [📖 Setup](#-setup-guide) • [🌐 Website](https://9router.com)
+[🚀 Quick Start](#-quick-start) • [🌟 What's New](#-whats-new-web2api--zero-auth-engine) • [⚡ Performance](#-performance--latency-benchmarks) • [💡 Features](#-key-features) • [📖 Setup](#-setup-guide) • [🌐 Website](https://9router.com)
 
 [🇧🇷 Português (Brasil)](./i18n/README.pt-BR.md) • [🇻🇳 Tiếng Việt](./i18n/README.vi.md) • [🇨🇳 中文](./i18n/README.zh-CN.md) • [🇯🇵 日本語](./i18n/README.ja-JP.md) • [🇷🇺 Русский](./i18n/README.ru.md) • [🇹🇭 ไทย](./i18n/README.th.md) • [🇮🇷 فارسی](./i18n/README.fa_IR.md) • [🇮🇩 Indonesia](./i18n/README.id-ID.md) • [🇪🇸 Español](./i18n/README.es.md) • [🇫🇷 Français](./i18n/README.fr.md)
 
 </div>
+
+---
+
+## 🌟 What's New: Web2API & Zero-Auth Engine
+
+Aris introduces **Web2API Architecture** — an ultra-fast reverse gateway layer enabling AI developer tools (Claude Code, Cursor, Codex, Antigravity, OpenClaw, Cline) to connect directly to zero-auth web backends with automated anti-bot bypass:
+
+| New Feature / Provider | Type | Highlights & Capabilities |
+|---|---|---|
+| **Ox Alpha Web (`oxalpha-web`)** | 🌐 Web2API | **Zero-Auth coding backend.** Native tool calling, JSON schema streaming, and continuous Cloudflare cookie renewal. |
+| **Gemini Web (`gemini-web`)** | 🌐 Web2API | **Direct session bridge to Google's official Gemini 2.5 Pro & Flash** models without cloud billing or token quotas. |
+| **Grok Web (`grok-web`)** | 🌐 Web2API | **Reverse gateway for xAI Grok** with fast reasoning models and Grok Imagine video generations. |
+| **Automated Turnstile Bypass** | 🛡️ Anti-Bot | **Dynamic background solver** resolving Cloudflare 428 Precondition Required and Turnstile challenges automatically. |
+| **Stitch Obsidian GUI** | 💎 UI Redesign | **Executive Router Dashboard (`/dashboard/overview`)** with real-time routing matrix, P95 metrics, and interactive developer sandbox (`/landing`). |
+| **Sub-Millisecond Engine** | ⚡ Core Speed | Persistent Undici keep-alive pools (128 sockets), `TCP_NODELAY`, zero-buffering SSE, and in-memory TTL caching (**0.26ms** socket connect). |
+| **One-Line Installers** | 📦 Deployment | Instant setup on macOS, Linux, WSL (`curl ... \| bash`) and Windows (`irm ... \| iex`). |
 
 ---
 
@@ -444,6 +460,37 @@ Default URLs:
 ---
 
 ## 🌐 Supported Providers
+
+### 🌐 Web2API & Zero-Auth Providers (NEW)
+
+Direct browser and web session reverse gateways with automated anti-bot clearance and zero upfront API subscription costs:
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center" width="160">
+        <b>⚡ Ox Alpha Web</b><br/>
+        <sub><code>oxalpha-web</code><br/>Zero-Auth • Automated Turnstile • Tool Calling</sub>
+      </td>
+      <td align="center" width="160">
+        <b>⚡ Gemini Web</b><br/>
+        <sub><code>gemini-web</code><br/>Official Gemini 2.5 Pro/Flash • Session Auth</sub>
+      </td>
+      <td align="center" width="160">
+        <b>⚡ Grok Web</b><br/>
+        <sub><code>grok-web</code><br/>xAI Grok Reasoning • Imagine Video</sub>
+      </td>
+      <td align="center" width="160">
+        <b>⚡ OpenCode Free</b><br/>
+        <sub><code>opencode-free</code><br/>Zero signup • Free dynamic models</sub>
+      </td>
+      <td align="center" width="160">
+        <b>⚡ Kiro AI</b><br/>
+        <sub><code>kiro</code><br/>Claude 4.5 Sonnet + GLM-5 + MiniMax</sub>
+      </td>
+    </tr>
+  </table>
+</div>
 
 ### 🔐 OAuth Providers
 
