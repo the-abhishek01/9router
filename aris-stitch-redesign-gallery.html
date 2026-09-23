@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aris AI Infrastructure Gateway — Stitch UI Redesign Showcase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: {
+              950: '#090A0F',
+              900: '#0E1117',
+              800: '#161B26',
+              700: '#222938'
+            },
+            emerald: {
+              accent: '#10B981',
+              glow: 'rgba(16, 185, 129, 0.25)'
+            }
+          },
+          fontFamily: {
+            sans: ['Geist', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #090A0F;
+      color: #E2E8F0;
+      font-family: 'Geist', sans-serif;
+    }
+    .active-tab {
+      background-color: #10B981;
+      color: #090A0F;
+      font-weight: 600;
+    }
+    .inactive-tab {
+      background-color: #161B26;
+      color: #94A3B8;
+    }
+    .inactive-tab:hover {
+      background-color: #222938;
+      color: #F8FAFC;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+  <!-- Top Bar -->
+  <header class="border-b border-white/10 bg-[#0E1117]/80 backdrop-blur sticky top-0 z-50 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-bold tracking-tight text-white text-base">ARIS GATEWAY</span>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono border border-emerald-500/20">Stitch v2.4</span>
+        </div>
+        <p class="text-xs text-slate-400">Design System: Obsidian Hyper-Router (Project ID: 6495427616077667049)</p>
+      </div>
+    </div>
+
+    <!-- Navigation Pills -->
+    <div class="flex items-center gap-2 bg-[#161B26] p-1 rounded-xl border border-white/5">
+      <button onclick="switchScreen('dashboard')" id="btn-dashboard" class="active-tab text-xs px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5">
+        <span>Executive Dashboard</span>
+      </button>
+      <button onclick="switchScreen('providers')" id="btn-providers" class="inactive-tab text-xs px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5">
+        <span>Providers & Credentials Hub</span>
+      </button>
+      <button onclick="switchScreen('landing')" id="btn-landing" class="inactive-tab text-xs px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5">
+        <span>Developer Landing & Playground</span>
+      </button>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-3">
+      <span class="inline-flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        3 Screens Generated
+      </span>
+      <a href="/Users/abhishekmaurya/.gemini/antigravity-ide/brain/d297d0bd-3a54-40dd-80f9-bbfa27ae2492/walkthrough.md" target="_blank" class="text-xs bg-white/5 hover:bg-white/10 text-white px-3 py-1.5 rounded-lg border border-white/10 transition">
+        View Specs
+      </a>
+    </div>
+  </header>
+
+  <!-- Screen Metadata Banner -->
+  <div class="bg-[#0E1117] border-b border-white/5 px-6 py-2.5 flex items-center justify-between text-xs text-slate-400">
+    <div class="flex items-center gap-4">
+      <span id="screen-info" class="font-mono text-slate-300">Screen 1 of 3: projects/6495427616077667049/screens/7b3953478edd4fdb9ca2f43142e846ef</span>
+      <span class="text-white/20">|</span>
+      <span>Color Theme: <code class="text-emerald-400 font-mono">#10B981</code> on Obsidian <code class="text-slate-300 font-mono">#090A0F</code></span>
+      <span class="text-white/20">|</span>
+      <span>Typography: <span class="text-white">Geist</span> + <span class="font-mono text-slate-300">JetBrains Mono</span></span>
+    </div>
+    <div class="flex items-center gap-3">
+      <button onclick="toggleMode('interactive')" id="btn-interactive" class="text-emerald-400 hover:text-emerald-300 font-medium underline">Interactive HTML</button>
+      <span class="text-white/20">|</span>
+      <button onclick="toggleMode('screenshot')" id="btn-screenshot" class="text-slate-400 hover:text-white">Figma Screenshot</button>
+    </div>
+  </div>
+
+  <!-- Screen Container -->
+  <main class="flex-1 flex flex-col relative w-full h-[calc(100vh-105px)] overflow-hidden">
+    <!-- Interactive iframe view -->
+    <iframe id="viewport" src="file:///Users/abhishekmaurya/.gemini/antigravity-ide/brain/d297d0bd-3a54-40dd-80f9-bbfa27ae2492/screen_1_dashboard.html" class="w-full h-full border-0"></iframe>
+    
+    <!-- Static screenshot fallback view -->
+    <div id="screenshot-view" class="hidden w-full h-full overflow-auto bg-[#090A0F] p-8 flex justify-center">
+      <img id="screenshot-img" src="file:///Users/abhishekmaurya/.gemini/antigravity-ide/brain/d297d0bd-3a54-40dd-80f9-bbfa27ae2492/screen_1_dashboard.png" class="rounded-xl border border-white/10 shadow-2xl max-w-6xl w-full object-contain" alt="Stitch Screen Preview">
+    </div>
+  </main>
+
+  <script>
+    const screens = {
+      dashboard: {
+        id: '7b3953478edd4fdb9ca2f43142e846ef',
+        name: 'Aris Gateway Executive Dashboard',
+        html: 'file:///Users/abhishekmaurya/.gemini/antigravity-ide/brain/d297d0bd-3a54-40dd-80f9-bbfa27ae2492/screen_1_dashboard.html',
+        png: 'file:///Users/abhishekmaurya/.gemini/antigravity-ide/brain/d297d0bd-3a54-40dd-80f9-bbfa27ae2492/screen_1_dashboard.png',
+        info: 'Screen 1: Executive Dashboard (Dynamic Routing Matrix, Failover Logs, Realtime Latency)'
+      },
+      providers: {
+        id: '72f706593cd64485bb442cef1981bfef',
+        name: 'Aris Provider & Credentials Hub',
+        html: 'file:///Users/abhishekmaurya/.gemini/antigravity-ide/brain/d297d0bd-3a54-40dd-80f9-bbfa27ae2492/screen_2_providers.html',
+        png: 'file:///Users/abhishekmaurya/.gemini/antigravity-ide/brain/d297d0bd-3a54-40dd-80f9-bbfa27ae2492/screen_2_providers.png',
+        info: 'Screen 2: Provider & Credentials Hub (Zero-Auth Ox Alpha, Gemini Web, Slide-Over Drawer)'
+      },
+      landing: {
+        id: '4c0c395e8514416998a53515129f7eeb',
+        name: 'Aris Gateway Landing & Playground',
+        html: 'file:///Users/abhishekmaurya/.gemini/antigravity-ide/brain/d297d0bd-3a54-40dd-80f9-bbfa27ae2492/screen_3_landing.html',
+        png: 'file:///Users/abhishekmaurya/.gemini/antigravity-ide/brain/d297d0bd-3a54-40dd-80f9-bbfa27ae2492/screen_3_landing.png',
+        info: 'Screen 3: Developer Landing Page & Interactive Playground (Code Sandbox, Stream Telemetry, Bento Grid)'
+      }
+    };
+
+    let currentScreen = 'dashboard';
+    let currentMode = 'interactive';
+
+    function switchScreen(key) {
+      currentScreen = key;
+      const s = screens[key];
+      
+      document.getElementById('viewport').src = s.html;
+      document.getElementById('screenshot-img').src = s.png;
+      document.getElementById('screen-info').innerText = s.info;
+
+      ['dashboard', 'providers', 'landing'].forEach(k => {
+        const btn = document.getElementById('btn-' + k);
+        if (k === key) {
+          btn.className = 'active-tab text-xs px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5';
+        } else {
+          btn.className = 'inactive-tab text-xs px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5';
+        }
+      });
+    }
+
+    function toggleMode(mode) {
+      currentMode = mode;
+      const iframe = document.getElementById('viewport');
+      const shot = document.getElementById('screenshot-view');
+      const btnInt = document.getElementById('btn-interactive');
+      const btnShot = document.getElementById('btn-screenshot');
+
+      if (mode === 'interactive') {
+        iframe.classList.remove('hidden');
+        shot.classList.add('hidden');
+        btnInt.className = 'text-emerald-400 hover:text-emerald-300 font-medium underline';
+        btnShot.className = 'text-slate-400 hover:text-white';
+      } else {
+        iframe.classList.add('hidden');
+        shot.classList.remove('hidden');
+        btnShot.className = 'text-emerald-400 hover:text-emerald-300 font-medium underline';
+        btnInt.className = 'text-slate-400 hover:text-white';
+      }
+    }
+  </script>
+</body>
+</html>
