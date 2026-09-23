@@ -116,13 +116,20 @@ Claude Code/Codex/OpenClaw/Cursor/Cline Settings:
 
 **That's it!** Start coding with FREE AI models.
 
-**Alternative: run from source (this repository):**
-
-This repository package is private (`9router-app`), so source/Docker execution is the expected local development path.
+**Run from source (this repository):**
 
 ```bash
+git clone https://github.com/the-abhishek01/9router.git
+cd 9router
 cp .env.example .env
 npm install
+npm run build:cli
+PORT=20128 node cli/app/custom-server.js
+```
+
+Or start development mode:
+
+```bash
 PORT=20128 NEXT_PUBLIC_BASE_URL=http://localhost:20128 npm run dev
 ```
 
@@ -264,7 +271,7 @@ Default URLs:
 
 </div>
 
-> 🎬 **Made a video about 9Router?** Submit a [Pull Request](https://github.com/decolua/9router/pulls) adding your video to this section — we'll merge it!
+> 🎬 **Made a video about 9Router / Aris?** Submit a [Pull Request](https://github.com/the-abhishek01/9router/pulls) adding your video to this section — we'll merge it!
 
 ---
 
@@ -1250,7 +1257,7 @@ Model: cc/claude-opus-4-7
 
 ```bash
 # Clone and install
-git clone https://github.com/decolua/9router.git
+git clone https://github.com/the-abhishek01/9router.git
 cd 9router
 npm install
 npm run build
@@ -1300,7 +1307,7 @@ docker run -d \
 **Build from source (dev):**
 
 ```bash
-git clone https://github.com/decolua/9router.git
+git clone https://github.com/the-abhishek01/9router.git
 cd 9router/app
 docker build -t 9router .
 docker run -d --name 9router -p 20128:20128 \
@@ -1520,8 +1527,8 @@ Authorization: Bearer your-api-key
 ## 📧 Support
 
 - **Website**: [9router.com](https://9router.com)
-- **GitHub**: [github.com/decolua/9router](https://github.com/decolua/9router)
-- **Issues**: [github.com/decolua/9router/issues](https://github.com/decolua/9router/issues)
+- **GitHub**: [github.com/the-abhishek01/9router](https://github.com/the-abhishek01/9router)
+- **Issues**: [github.com/the-abhishek01/9router/issues](https://github.com/the-abhishek01/9router/issues)
 
 ---
 
