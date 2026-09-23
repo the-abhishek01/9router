@@ -19,6 +19,9 @@ for (const entry of REGISTRY) {
 
 const BUILTIN_MODEL_ALIASES = {
   "grok-build": "gcli/grok-build",
+  "ox-alpha": "oxalpha-web/ox-alpha",
+  "oxalpha": "oxalpha-web/ox-alpha",
+  "glm-5.3-flash": "oxalpha-web/glm-5.3-flash",
 };
 
 /**
@@ -132,6 +135,8 @@ const MODEL_PREFIX_PROVIDERS = [
   [/^o[134]/, "openai"],
   [/^deepseek-/, "openrouter"],
   [/^jev-/, "jev-ai"],
+  [/^ox-/, "oxalpha-web"],
+  [/^oxalpha/, "oxalpha-web"],
 ];
 
 /**

@@ -1,43 +1,42 @@
-// Claude-inspired color palette for Endpoint Proxy
-// Light theme: Warm beige/cream tones
-// Dark theme: Deep charcoal/brown tones
+// Stitch-inspired Obsidian Hyper-Router palette for Aris Gateway
+// Dark theme: Deep obsidian surfaces with electric emerald telemetry accents
 
 export const COLORS = {
-  // Primary - Warm Coral/Terracotta (Claude-like)
+  // Primary - Electric Emerald
   primary: {
-    DEFAULT: "#D97757",
-    hover: "#C56243",
-    light: "#E8A58C",
-    dark: "#B0664D",
+    DEFAULT: "#10B981",
+    hover: "#059669",
+    light: "#34D399",
+    dark: "#047857",
   },
 
   // Light theme backgrounds
   light: {
-    bg: "#FBF9F6",
-    bgAlt: "#F5F1ED",
+    bg: "#F8FAFC",
+    bgAlt: "#F1F5F9",
     surface: "#FFFFFF",
-    sidebar: "rgba(246, 246, 246, 0.8)",
-    border: "rgba(0, 0, 0, 0.1)",
-    textMain: "#383733",
-    textMuted: "#75736E",
+    sidebar: "rgba(248, 250, 252, 0.85)",
+    border: "rgba(0, 0, 0, 0.08)",
+    textMain: "#0F172A",
+    textMuted: "#64748B",
   },
 
-  // Dark theme backgrounds
+  // Dark theme backgrounds (Stitch Obsidian Palette)
   dark: {
-    bg: "#191918",
-    bgAlt: "#1F1F1E",
-    surface: "#242423",
-    sidebar: "rgba(30, 30, 30, 0.8)",
-    border: "rgba(255, 255, 255, 0.1)",
-    textMain: "#ECEBE8",
-    textMuted: "#9E9D99",
+    bg: "#090A0F",
+    bgAlt: "#0E1117",
+    surface: "#121620",
+    sidebar: "rgba(14, 17, 23, 0.92)",
+    border: "rgba(255, 255, 255, 0.08)",
+    textMain: "#F8FAFC",
+    textMuted: "#94A3B8",
   },
 
   // Status colors
   status: {
-    success: "#22C55E",
-    successLight: "#DCFCE7",
-    successDark: "#166534",
+    success: "#10B981",
+    successLight: "#D1FAE5",
+    successDark: "#065F46",
     warning: "#F59E0B",
     warningLight: "#FEF3C7",
     warningDark: "#92400E",

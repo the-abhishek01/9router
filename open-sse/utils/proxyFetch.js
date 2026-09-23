@@ -213,6 +213,30 @@ function resolveConnectionProxyUrl(targetUrl, proxyOptions) {
   return normalizeProxyUrl(proxyUrlRaw);
 }
 
+let directDispatcher = null;
+async function getDirectDispatcher() {
+  if (!directDispatcher) {
+    try {
+      const { Agent, setGlobalDispatcher } = await import("undici");
+      directDispatcher = new Agent({
+        keepAliveTimeout: 60_000,
+        keepAliveMaxTimeout: 180_000,
+        connections: 128,
+        pipelining: 1,
+        connect: {
+          noDelay: true,
+          keepAlive: true,
+          keepAliveInitialDelay: 1000,
+        },
+      });
+      try { setGlobalDispatcher(directDispatcher); } catch { /* ignore if already locked */ }
+    } catch {
+      directDispatcher = null;
+    }
+  }
+  return directDispatcher;
+}
+
 /**
  * Create proxy dispatcher lazily (undici-compatible)
  */
@@ -348,9 +372,9 @@ export async function proxyAwareFetch(url, options = {}, proxyOptions = null) {
     }
   }
 
-  // got-scraping disabled — use native fetch directly
-  // (Re-enable per-host by wrapping with tryGotScrapingFetch when needed)
-  return originalFetch(url, options);
+  // Use persistent keep-alive pool with TCP_NODELAY for direct fetch
+  const directDisp = await getDirectDispatcher();
+  return originalFetch(url, directDisp && !options.dispatcher ? { ...options, dispatcher: directDisp } : options);
 }
 
 /**

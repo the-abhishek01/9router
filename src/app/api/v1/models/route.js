@@ -254,11 +254,21 @@ function comboMatchesKinds(combo, kindFilter) {
   return kindFilter.includes(kind);
 }
 
+const modelsListCache = new Map();
+const MODELS_LIST_CACHE_TTL_MS = 15000;
+
 /**
  * Build OpenAI-format models list filtered by service kinds.
  * @param {string[]} kindFilter - List of service kinds to include (e.g. ["llm"], ["webSearch","webFetch"]).
  */
 export async function buildModelsList(kindFilter, options = {}) {
+  const cacheKey = `${kindFilter.join(",")}:${options.skipDynamicFetch === true}`;
+  const now = Date.now();
+  const cached = modelsListCache.get(cacheKey);
+  if (cached && now < cached.expiresAt) {
+    return cached.data;
+  }
+
   // When this header is present, the /v1/models request came from another
   // 9router instance's fetchCompatibleModelIds — skip dynamic fetch to break
   // cross-instance recursive loops.
@@ -562,6 +572,7 @@ export async function buildModelsList(kindFilter, options = {}) {
     dedupedModels.push(model);
   }
 
+  modelsListCache.set(cacheKey, { data: dedupedModels, expiresAt: Date.now() + MODELS_LIST_CACHE_TTL_MS });
   return dedupedModels;
 }
 

@@ -106,27 +106,6 @@ const getPageInfo = (pathname) => {
       icon: "data_usage",
       breadcrumbs: [],
     };
-  if (pathname.includes("/mitm"))
-    return {
-      title: "MITM Proxy",
-      description: "Intercept CLI tool traffic and route through Aris",
-      icon: "security",
-      breadcrumbs: [],
-    };
-  if (pathname.includes("/token-saver"))
-    return {
-      title: "Token Saver",
-      description: "Compress prompts and outputs to save tokens",
-      icon: "savings",
-      breadcrumbs: [],
-    };
-  if (pathname.includes("/cli-tools"))
-    return {
-      title: "CLI Tools",
-      description: "Configure CLI tools",
-      icon: "terminal",
-      breadcrumbs: [],
-    };
   if (pathname.includes("/proxy-pools"))
     return {
       title: "Proxy Pools",
@@ -134,11 +113,11 @@ const getPageInfo = (pathname) => {
       icon: "lan",
       breadcrumbs: [],
     };
-  if (pathname.includes("/skills"))
+  if (pathname.includes("/overview") || pathname === "/dashboard")
     return {
-      title: "Agent Skills",
-      description: "Copy a link and paste to your AI to use Aris — no install needed",
-      icon: "extension",
+      title: "Executive Dashboard",
+      description: "Real-time AI gateway telemetry, failover monitoring, and routing matrix",
+      icon: "dashboard",
       breadcrumbs: [],
     };
   if (pathname.includes("/endpoint"))
@@ -155,25 +134,11 @@ const getPageInfo = (pathname) => {
       icon: "settings",
       breadcrumbs: [],
     };
-  if (pathname.includes("/translator"))
-    return {
-      title: "Translator",
-      description: "Debug translation flow between formats",
-      icon: "translate",
-      breadcrumbs: [],
-    };
   if (pathname.includes("/console-log"))
     return {
       title: "Console Log",
       description: "Live server console output",
       icon: "monitor",
-      breadcrumbs: [],
-    };
-  if (pathname === "/dashboard")
-    return {
-      title: "Endpoint",
-      description: "API endpoint configuration",
-      icon: "api",
       breadcrumbs: [],
     };
   return { title: "", description: "", breadcrumbs: [] };

@@ -1,7 +1,6 @@
 import { BaseExecutor } from "./base.js";
 import { PROVIDERS } from "../config/providers.js";
 import { SSE_DONE, SSE_HEADERS_NO_BUFFER } from "../utils/sseConstants.js";
-import { sseChunk } from "../utils/sse.js";
 import { proxyAwareFetch } from "../utils/proxyFetch.js";
 
 const OXALPHA_BASE_URL = "https://oxalpha.com";
@@ -16,6 +15,7 @@ export class OxAlphaWebExecutor extends BaseExecutor {
   constructor() {
     super("oxalpha-web", PROVIDERS["oxalpha-web"]);
     this.cachedSession = null;
+    this.sessionCookieMap = new Map();
   }
 
   /**
@@ -30,6 +30,55 @@ export class OxAlphaWebExecutor extends BaseExecutor {
   }
 
   /**
+   * Build Cookie header string from internal cookie map.
+   */
+  getCookieHeader() {
+    return Array.from(this.sessionCookieMap.entries())
+      .map(([k, v]) => `${k}=${v}`)
+      .join("; ");
+  }
+
+  /**
+   * Update internal cookie jar with cookies from HTTP response headers.
+   */
+  updateSessionCookies(res) {
+    if (!res || !res.headers) return;
+    let setCookieHeaders = [];
+    if (typeof res.headers.getSetCookie === "function") {
+      setCookieHeaders = res.headers.getSetCookie();
+    } else if (res.headers.get("set-cookie")) {
+      setCookieHeaders = res.headers.get("set-cookie").split(",");
+    }
+
+    if (!setCookieHeaders || setCookieHeaders.length === 0) return;
+
+    for (const sc of setCookieHeaders) {
+      const part = sc.split(";")[0]?.trim();
+      if (!part) continue;
+      const eqIdx = part.indexOf("=");
+      if (eqIdx !== -1) {
+        const key = part.slice(0, eqIdx).trim();
+        const val = part.slice(eqIdx + 1).trim();
+        if (key) {
+          this.sessionCookieMap.set(key, val);
+        }
+      }
+    }
+
+    if (this.cachedSession) {
+      this.cachedSession.cookieHeader = this.getCookieHeader();
+      // If server rotated XSRF-TOKEN in cookies, update CSRF token
+      if (this.sessionCookieMap.has("XSRF-TOKEN")) {
+        try {
+          this.cachedSession.csrfToken = decodeURIComponent(this.sessionCookieMap.get("XSRF-TOKEN"));
+        } catch {
+          this.cachedSession.csrfToken = this.sessionCookieMap.get("XSRF-TOKEN");
+        }
+      }
+    }
+  }
+
+  /**
    * Fetch a fresh anonymous session (CSRF token + cookies) from https://oxalpha.com/chat.
    */
   async refreshSession(log) {
@@ -39,6 +88,15 @@ export class OxAlphaWebExecutor extends BaseExecutor {
       headers: {
         "User-Agent": DEFAULT_UA,
         Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "sec-ch-ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"macOS"',
+        "sec-fetch-dest": "document",
+        "sec-fetch-mode": "navigate",
+        "sec-fetch-site": "none",
+        "sec-fetch-user": "?1",
+        "upgrade-insecure-requests": "1",
       },
     });
 
@@ -53,24 +111,13 @@ export class OxAlphaWebExecutor extends BaseExecutor {
     }
     const csrfToken = csrfMatch[1];
 
-    let cookieHeader = "";
-    if (typeof res.headers.getSetCookie === "function") {
-      cookieHeader = res.headers
-        .getSetCookie()
-        .map((c) => c.split(";")[0])
-        .join("; ");
-    } else if (res.headers.get("set-cookie")) {
-      cookieHeader = res.headers
-        .get("set-cookie")
-        .split(",")
-        .map((c) => c.split(";")[0].trim())
-        .join("; ");
-    }
+    this.sessionCookieMap.clear();
+    this.updateSessionCookies(res);
 
     this.cachedSession = {
       csrfToken,
-      cookieHeader,
-      expiresAt: Date.now() + 50 * 60 * 1000, // 50 minutes TTL
+      cookieHeader: this.getCookieHeader(),
+      expiresAt: Date.now() + 45 * 60 * 1000, // 45 minutes TTL
     };
 
     return this.cachedSession;
@@ -108,14 +155,25 @@ export class OxAlphaWebExecutor extends BaseExecutor {
 
     if (userCookie && !forceRefresh) {
       let csrfToken = null;
-      const csrfMatch = userCookie.match(/XSRF-TOKEN=([^;]+)/i);
-      if (csrfMatch) {
-        try {
-          csrfToken = decodeURIComponent(csrfMatch[1]);
-        } catch {
-          csrfToken = csrfMatch[1];
+      // Populate cookie map from user provided cookie string
+      for (const pair of userCookie.split(";")) {
+        const trimmed = pair.trim();
+        if (!trimmed) continue;
+        const eqIdx = trimmed.indexOf("=");
+        if (eqIdx !== -1) {
+          const k = trimmed.slice(0, eqIdx).trim();
+          const v = trimmed.slice(eqIdx + 1).trim();
+          this.sessionCookieMap.set(k, v);
+          if (k.toLowerCase() === "xsrf-token") {
+            try {
+              csrfToken = decodeURIComponent(v);
+            } catch {
+              csrfToken = v;
+            }
+          }
         }
       }
+
       if (!csrfToken) {
         if (!this.cachedSession || Date.now() >= this.cachedSession.expiresAt) {
           await this.refreshSession(log);
@@ -236,32 +294,42 @@ export class OxAlphaWebExecutor extends BaseExecutor {
 
     let session = await this.getSession(credentials, false, log);
     let upstreamRes = await this.sendChatRequest(payload, session, signal);
+    this.updateSessionCookies(upstreamRes);
 
-    // If session expired or CSRF invalid (HTTP 419 / 401 / 403), retry once with fresh session
-    if (!upstreamRes.ok && (upstreamRes.status === 419 || upstreamRes.status === 401 || upstreamRes.status === 403)) {
-      log?.warn?.("OXALPHA-WEB", `Ox Alpha session invalid (status ${upstreamRes.status}), refreshing...`);
+    // Self-healing session recovery:
+    // If upstream returns 428 (Turnstile challenge / message quota checkpoint),
+    // 419 (CSRF mismatch), or 401/403 (session expired), automatically fetch a fresh
+    // session and retry once.
+    if (!upstreamRes.ok && (upstreamRes.status === 428 || upstreamRes.status === 419 || upstreamRes.status === 401 || upstreamRes.status === 403)) {
+      log?.warn?.("OXALPHA-WEB", `Ox Alpha session checkpoint/expired (HTTP ${upstreamRes.status}), auto-refreshing session and retrying...`);
+      this.cachedSession = null;
+      this.sessionCookieMap.clear();
       session = await this.getSession(credentials, true, log);
       upstreamRes = await this.sendChatRequest(payload, session, signal);
+      this.updateSessionCookies(upstreamRes);
     }
 
     if (!upstreamRes.ok) {
       const errText = await upstreamRes.text().catch(() => "");
       log?.error?.("OXALPHA-WEB", `Upstream error ${upstreamRes.status}: ${errText}`);
-      let userMsg = `Ox Alpha upstream error (${upstreamRes.status}): ${errText || upstreamRes.statusText}`;
-      if (upstreamRes.status === 428) {
-        userMsg =
-          "Ox Alpha rate check / verification required (Turnstile). Anonymous daily quota reached from this IP. Paste your oxalpha.com session cookie (DevTools → Application → Cookies) or provide a Turnstile token in credentials.";
-      }
-      const httpStatus = upstreamRes.status === 428 ? 429 : upstreamRes.status;
+      
+      // CRITICAL: Do NOT return HTTP 429 or type "insufficient_quota" for 428!
+      // In 9router, 429 triggers markAccountUnavailable() which locks the connection in SQLite.
+      // Return 503 with clear message so the router does not permanently lock the user's connection.
+      const status = upstreamRes.status === 428 ? 503 : upstreamRes.status;
+      const userMsg = upstreamRes.status === 428
+        ? "Ox Alpha verification checkpoint reached. A fresh session has been scheduled; please retry your request."
+        : `Ox Alpha upstream error (${upstreamRes.status}): ${errText || upstreamRes.statusText}`;
+
       const errResp = new Response(
         JSON.stringify({
           error: {
             message: userMsg,
-            type: upstreamRes.status === 428 ? "insufficient_quota" : "upstream_error",
-            code: httpStatus,
+            type: "upstream_error",
+            code: status,
           },
         }),
-        { status: httpStatus, headers: { "Content-Type": "application/json" } }
+        { status, headers: { "Content-Type": "application/json" } }
       );
       return { response: errResp, url: OXALPHA_API_CHAT, headers: {}, transformedBody: payload };
     }
@@ -298,6 +366,13 @@ export class OxAlphaWebExecutor extends BaseExecutor {
       Referer: OXALPHA_CHAT_PAGE,
       Origin: OXALPHA_BASE_URL,
       Accept: "text/event-stream, */*",
+      "Accept-Language": "en-US,en;q=0.9",
+      "sec-ch-ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": '"macOS"',
+      "sec-fetch-dest": "empty",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-site": "same-origin",
     };
 
     if (session?.turnstileToken) {
@@ -312,9 +387,24 @@ export class OxAlphaWebExecutor extends BaseExecutor {
     });
   }
 
+  /**
+   * Override parseError to prevent 428/Turnstile transient errors from locking account in DB.
+   */
+  parseError(response, bodyText) {
+    if (response.status === 428) {
+      return {
+        status: 503,
+        message: "Ox Alpha verification checkpoint reached. Auto-refreshing session...",
+      };
+    }
+    return null;
+  }
+
   buildStreamingStream(bodyStream, requestedModel, signal) {
     const reader = bodyStream.getReader();
     const decoder = new TextDecoder();
+    const encoder = new TextEncoder();
+    const sseDoneBytes = encoder.encode(SSE_DONE);
     let buffer = "";
 
     return new ReadableStream({
@@ -328,7 +418,7 @@ export class OxAlphaWebExecutor extends BaseExecutor {
 
             const { value, done } = await reader.read();
             if (done) {
-              controller.enqueue(new TextEncoder().encode(SSE_DONE));
+              controller.enqueue(sseDoneBytes);
               controller.close();
               return;
             }
@@ -342,7 +432,7 @@ export class OxAlphaWebExecutor extends BaseExecutor {
               if (!trimmed) continue;
 
               if (trimmed === "data: [DONE]") {
-                controller.enqueue(new TextEncoder().encode(SSE_DONE));
+                controller.enqueue(sseDoneBytes);
                 continue;
               }
 
@@ -362,10 +452,10 @@ export class OxAlphaWebExecutor extends BaseExecutor {
                     }
                   }
 
-                  controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(chunk)}\n\n`));
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
                 } catch {
                   // Forward raw data line if JSON parse fails
-                  controller.enqueue(new TextEncoder().encode(`${trimmed}\n\n`));
+                  controller.enqueue(encoder.encode(`${trimmed}\n\n`));
                 }
               }
             }
@@ -386,7 +476,7 @@ export class OxAlphaWebExecutor extends BaseExecutor {
     let buffer = "";
     let content = "";
     let reasoning = "";
-    let completionId = `chatcmpl-ox-${crypto.randomUUID().slice(0, 12)}`;
+    let completionId = `chatcmpl-ox-${Math.random().toString(36).slice(2, 14)}`;
     let finishReason = "stop";
     let usage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
 

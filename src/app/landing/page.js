@@ -1,106 +1,85 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import Navigation from "./components/Navigation";
 import HeroSection from "./components/HeroSection";
-import FlowAnimation from "./components/FlowAnimation";
-import HowItWorks from "./components/HowItWorks";
+import PlaygroundSection from "./components/PlaygroundSection";
 import Features from "./components/Features";
-import GetStarted from "./components/GetStarted";
 import Footer from "./components/Footer";
 
 export default function LandingPage() {
   const router = useRouter();
+
   return (
-    <div className="relative text-white font-sans overflow-x-hidden antialiased selection:bg-[#f97815] selection:text-white">
-      {/* Animated Background */}
-      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-[#181411]">
-        {/* Grid pattern */}
-        <div className="absolute inset-0 opacity-[0.06]" style={{
-          backgroundImage: `linear-gradient(to right, #f97815 1px, transparent 1px), linear-gradient(to bottom, #f97815 1px, transparent 1px)`,
-          backgroundSize: '50px 50px'
-        }}></div>
-        
-        {/* Animated gradient orbs */}
-        <div className="absolute top-0 left-1/4 w-[700px] h-[700px] bg-[#f97815]/12 rounded-full blur-[130px] animate-blob"></div>
-        <div className="absolute top-1/3 right-1/4 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[130px] animate-blob" style={{ animationDelay: '2s', animationDuration: '22s' }}></div>
-        <div className="absolute bottom-0 left-1/2 w-[650px] h-[650px] bg-blue-500/8 rounded-full blur-[130px] animate-blob" style={{ animationDelay: '4s', animationDuration: '25s' }}></div>
-        
-        {/* Vignette effect */}
-        <div className="absolute inset-0" style={{
-          background: 'radial-gradient(circle at center, transparent 0%, rgba(24, 20, 17, 0.4) 100%)'
-        }}></div>
+    <div className="relative text-white font-sans overflow-x-hidden antialiased selection:bg-emerald-500/20 selection:text-emerald-300 bg-[#090A0F]">
+      {/* Deep Obsidian Grid Background */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-[#090A0F]">
+        {/* Fine sub-pixel grid pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.05]"
+          style={{
+            backgroundImage: `radial-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px)`,
+            backgroundSize: "32px 32px",
+          }}
+        ></div>
+
+        {/* Ambient Emerald Glow Orbs */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-500/10 rounded-full blur-[140px]"></div>
+        <div className="absolute top-1/2 right-10 w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[150px]"></div>
+
+        {/* Vignette */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: "radial-gradient(circle at center, transparent 0%, rgba(9, 10, 15, 0.7) 100%)",
+          }}
+        ></div>
       </div>
 
       <div className="relative z-10">
         <Navigation />
-        
-        <main>
-          {/* Hero with Flow Animation */}
-          <div className="relative">
+
+        <main className="min-h-screen">
           <HeroSection />
-          <div className="flex justify-center pb-20">
-            <FlowAnimation />
-          </div>
-        </div>
-        
-        <GetStarted />
-        <HowItWorks />
-        <Features />
-        
-        {/* CTA Section */}
-        <section className="py-32 px-6 relative overflow-hidden">
-          <div className="absolute inset-0 bg-linear-to-t from-[#f97815]/5 to-transparent pointer-events-none"></div>
-          <div className="max-w-4xl mx-auto text-center relative z-10">
-            <h2 className="text-4xl md:text-5xl font-black mb-6">Ready to Simplify Your AI Infrastructure?</h2>
-            <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
-              Join developers who are streamlining their AI integrations with Aris. Open source and free to start.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button 
-                onClick={() => router.push("/dashboard")}
-                className="w-full sm:w-auto h-14 px-10 rounded-lg bg-[#f97815] hover:bg-[#e0650a] text-[#181411] text-lg font-bold transition-all shadow-[0_0_20px_rgba(249,120,21,0.5)]"
-              >
-                Start Free
-              </button>
-              <button 
-                onClick={() => window.open("https://github.com/decolua/9router#readme", "_blank")}
-                className="w-full sm:w-auto h-14 px-10 rounded-lg border border-[#3a2f27] hover:bg-[#23180f] text-white text-lg font-bold transition-all"
-              >
-                Read Documentation
-              </button>
+          <PlaygroundSection />
+          <Features />
+
+          {/* CTA Section */}
+          <section className="py-24 px-6 relative overflow-hidden border-t border-white/5">
+            <div className="max-w-4xl mx-auto text-center relative z-10">
+              <span className="text-xs font-mono text-emerald-400 font-semibold uppercase tracking-wider mb-3 inline-block">
+                Production-Ready AI Gateway
+              </span>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-4 tracking-tight text-white">
+                Simplify & Scale Your AI Infrastructure
+              </h2>
+              <p className="text-base sm:text-lg text-slate-400 mb-8 max-w-2xl mx-auto leading-relaxed">
+                Connect your CLI tools, IDE extensions, and services to Aris. Free, automated failover, and open source under MIT.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <button
+                  onClick={() => router.push("/dashboard/overview")}
+                  className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-sm font-bold transition-all shadow-[0_0_24px_rgba(16,185,129,0.35)] active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-base font-bold">bolt</span>
+                  Open Executive Dashboard
+                </button>
+                <a
+                  href="https://github.com/decolua/9router"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#121620] hover:bg-[#161B26] text-white border border-white/10 hover:border-white/20 text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-base text-slate-400">code</span>
+                  View GitHub Repository
+                </a>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
         </main>
-        
+
         <Footer />
       </div>
-      
-      {/* Global styles for keyframes */}
-      <style jsx global>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
-        @keyframes dash {
-          to { stroke-dashoffset: -20; }
-        }
-        @keyframes blob {
-          0%, 100% { 
-            transform: translate(0, 0) scale(1);
-          }
-          33% { 
-            transform: translate(30px, -50px) scale(1.1);
-          }
-          66% { 
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-        }
-        .animate-blob {
-          animation: blob 20s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 }
-

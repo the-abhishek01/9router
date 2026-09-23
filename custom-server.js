@@ -46,6 +46,25 @@ function startBackgroundTokenRefreshFromCustomServer() {
     });
 }
 
+// Configure global high-performance undici Agent with connection pooling & TCP_NODELAY
+try {
+  const { Agent, setGlobalDispatcher } = require("undici");
+  const globalAgent = new Agent({
+    keepAliveTimeout: 60_000,
+    keepAliveMaxTimeout: 180_000,
+    connections: 128,
+    pipelining: 1,
+    connect: {
+      noDelay: true,
+      keepAlive: true,
+      keepAliveInitialDelay: 1000,
+    },
+  });
+  setGlobalDispatcher(globalAgent);
+} catch {
+  /* undici optional fallback */
+}
+
 // Wrap Next standalone HTTP server: derive client IP from the TCP socket
 // (unspoofable) and strip client-supplied forwarding headers so downstream
 // rate-limiting keys on the real peer address instead of attacker-controlled XFF.
@@ -54,6 +73,10 @@ http.createServer = (...args) => {
   const rest = args.filter((a) => typeof a !== "function");
   if (!handler) return origCreate(...args);
   const wrapped = (req, res) => {
+    // Immediate TCP_NODELAY for sub-millisecond SSE token flushing
+    if (req.socket && typeof req.socket.setNoDelay === "function") {
+      req.socket.setNoDelay(true);
+    }
     const socketIp = req.socket && req.socket.remoteAddress ? req.socket.remoteAddress : "";
     const xff = req.headers["x-forwarded-for"];
     const xRealIp = req.headers["x-real-ip"];
@@ -73,6 +96,9 @@ http.createServer = (...args) => {
     return handler(req, res);
   };
   const server = origCreate(...rest, wrapped);
+  server.keepAliveTimeout = 65000;
+  server.headersTimeout = 66000;
+  server.requestTimeout = 0; // Don't terminate long LLM generations
   server.once("listening", () => {
     startBackgroundTokenRefreshFromCustomServer();
   });
