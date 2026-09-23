@@ -457,52 +457,9 @@ function isRestrictedEnvironment() {
 }
 
 // Check if new version available, return latest version or null
+// Updates disabled
 function checkForUpdate() {
-  return new Promise((resolve) => {
-    if (skipUpdate) {
-      resolve(null);
-      return;
-    }
-
-    const spinner = createSpinner("Checking for updates...").start();
-    let resolved = false;
-
-    const safetyTimeout = setTimeout(() => {
-      if (!resolved) {
-        resolved = true;
-        spinner.stop();
-        resolve(null);
-      }
-    }, 8000);
-
-    const done = (version) => {
-      if (resolved) return;
-      resolved = true;
-      clearTimeout(safetyTimeout);
-      spinner.stop();
-      resolve(version);
-    };
-
-    const req = https.get(`https://registry.npmjs.org/${pkg.name}/latest`, { timeout: 3000 }, (res) => {
-      let data = "";
-      res.on("data", chunk => data += chunk);
-      res.on("end", () => {
-        try {
-          const latest = JSON.parse(data);
-          if (latest.version && compareVersions(latest.version, pkg.version) > 0) {
-            done(latest.version);
-          } else {
-            done(null);
-          }
-        } catch (e) {
-          done(null);
-        }
-      });
-    });
-
-    req.on("error", () => done(null));
-    req.on("timeout", () => { req.destroy(); done(null); });
-  });
+  return Promise.resolve(null);
 }
 
 // Open browser
@@ -539,14 +496,13 @@ if (!fs.existsSync(serverPath)) {
   process.exit(1);
 }
 
-// Start server immediately; run update check in parallel (not on the critical path).
-const updatePromise = checkForUpdate();
+// Start server immediately
 killAllAppProcesses(port)
   .then(() => killProcessOnPort(port))
-  .then(() => startServer(updatePromise));
+  .then(() => startServer());
 
 // Show interface selection menu
-async function showInterfaceMenu(latestVersion) {
+async function showInterfaceMenu() {
   const { selectMenu } = require("./src/cli/utils/input");
   const { clearScreen } = require("./src/cli/utils/display");
   const { getEndpoint } = require("./src/cli/utils/endpoint");
@@ -566,36 +522,25 @@ async function showInterfaceMenu(latestVersion) {
 
   const subtitle = `🚀 Server: \x1b[32m${serverUrl}\x1b[0m`;
 
-  const menuItems = [];
-
-  if (latestVersion) {
-    menuItems.push({ label: `Update to v${latestVersion} (current: v${pkg.version})`, icon: "⬆" });
-  }
-
-  menuItems.push(
+  const menuItems = [
     { label: "Web UI (Open in Browser)", icon: "🌐" },
     { label: "Terminal UI (Interactive CLI)", icon: "💻" },
     { label: "Hide to Tray (Background)", icon: "🔔" },
     { label: "Exit", icon: "🚪" }
-  );
+  ];
 
   const selected = await selectMenu(`Choose Interface (v${pkg.version})`, menuItems, 0, subtitle);
 
-  const offset = latestVersion ? 1 : 0;
-
-  if (latestVersion && selected === 0) return "update";
-  if (selected === offset) return "web";
-  if (selected === offset + 1) return "terminal";
-  if (selected === offset + 2) return "hide";
+  if (selected === 0) return "web";
+  if (selected === 1) return "terminal";
+  if (selected === 2) return "hide";
   return "exit";
 }
 
 const MAX_RESTARTS = 2;
 const RESTART_RESET_MS = 30000; // Reset counter if alive > 30s
 
-function startServer(updatePromise) {
-  // Accept either a Promise (parallel update check) or a resolved value.
-  const latestVersionPromise = Promise.resolve(updatePromise);
+function startServer() {
   const displayHost = getDisplayHost();
   const url = `http://${displayHost}:${port}/dashboard`;
   // Surface real network exposure when bound to all interfaces (default 0.0.0.0).
@@ -727,28 +672,14 @@ function startServer(updatePromise) {
 
   // Wait for server to be ready, then show interface menu loop + tray
   waitServerReady(port).then(async () => {
-    // Resolve parallel update check (already running); don't block server start on it.
-    const latestVersion = await latestVersionPromise;
     // Start tray icon alongside TUI
     initTrayIcon();
 
     try {
       while (true) {
-        const choice = await showInterfaceMenu(latestVersion);
+        const choice = await showInterfaceMenu();
 
-        if (choice === "update") {
-          isShuttingDown = true;
-          const { clearScreen } = require("./src/cli/utils/display");
-          clearScreen();
-          console.log(`\n⬆  Update v${pkg.version} → v${latestVersion}\n`);
-          console.log(`Run this after exit:\n`);
-          console.log(`   \x1b[33m${INSTALL_CMD_LATEST}\x1b[0m\n`);
-          cleanup();
-          await killAllAppProcesses(port);
-          await killProcessOnPort(port);
-          setTimeout(() => process.exit(0), 200);
-          return;
-        } else if (choice === "web") {
+        if (choice === "web") {
           openBrowser(url);
           // Wait for user to come back
           const { pause } = require("./src/cli/utils/input");
