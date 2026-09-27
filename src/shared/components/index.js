@@ -39,5 +39,6 @@ export { default as CapacityBadges } from "./CapacityBadges";
 
 // Layouts
 export * from "./layouts";
+export { default as McpMarketplaceModal } from "./McpMarketplaceModal";
 
 

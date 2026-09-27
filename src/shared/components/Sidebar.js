@@ -18,9 +18,12 @@ const navItems = [
   { href: "/dashboard/overview", label: "Executive Dashboard", icon: "dashboard" },
   { href: "/dashboard/endpoint", label: "Endpoint & Key", icon: "api" },
   { href: "/dashboard/providers", label: "Providers", icon: "dns" },
-  { href: "/dashboard/combos", label: "Combo & Vision Adapter", icon: "layers" },
+  { href: "/dashboard/combos", label: "Combos", icon: "layers" },
   { href: "/dashboard/usage", label: "Usage", icon: "bar_chart" },
   { href: "/dashboard/quota", label: "Quota Tracker", icon: "data_usage" },
+  { href: "/dashboard/token-saver", label: "Token Saver", icon: "savings" },
+  { href: "/dashboard/mitm", label: "MITM", icon: "security" },
+  { href: "/dashboard/cli-tools", label: "CLI Tools", icon: "terminal" },
 ];
 
 const debugItems = [
@@ -35,6 +38,19 @@ export default function Sidebar({ onClose }) {
   const pathname = usePathname();
   const [mediaOpen, setMediaOpen] = useState(false);
   const [isDisconnected, setIsDisconnected] = useState(false);
+  const [isShuttingDown, setIsShuttingDown] = useState(false);
+
+  const handleShutdown = async () => {
+    setIsShuttingDown(true);
+    try {
+      await fetch("/api/version/shutdown", { method: "POST" });
+    } catch {
+      // Expected to fail as server shuts down; ignore error
+    }
+    setTimeout(() => {
+      setIsDisconnected(true);
+    }, 1000);
+  };
 
   const isActive = (href) => {
     if (href === "/dashboard/overview") {
@@ -242,6 +258,29 @@ export default function Sidebar({ onClose }) {
             </Link>
           </div>
         </nav>
+
+        {/* Footer section */}
+        <div className="p-3 border-t border-border-subtle mt-auto">
+          <div className="flex items-start gap-2 p-2.5 rounded-lg bg-surface/50 border border-border-subtle mb-2.5">
+            <div className="flex items-center justify-center size-5 rounded-md bg-blue-500/10 text-blue-400 shrink-0 mt-0.5">
+              <span className="material-symbols-outlined text-[13px]">info</span>
+            </div>
+            <span className="text-[11px] font-medium text-text-muted leading-tight">
+              Service is running in terminal. You can close this web page. Shutdown will stop the service.
+            </span>
+          </div>
+
+          <Button
+            variant="outline"
+            fullWidth
+            icon="power_settings_new"
+            onClick={handleShutdown}
+            disabled={isShuttingDown}
+            className="text-xs text-text-muted hover:text-red-500 hover:border-red-500/30"
+          >
+            {isShuttingDown ? "Shutting down..." : "Shutdown"}
+          </Button>
+        </div>
 
       </aside>
 

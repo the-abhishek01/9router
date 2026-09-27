@@ -80,6 +80,18 @@ if (args[0] === "xai" && args[1] === "video") {
   return;
 }
 
+// Subcommand: `update` (`9router update` / `aris update`)
+if (args[0] === "update") {
+  const { run } = require("./src/cli/commands/update");
+  run(args.slice(1))
+    .then((code) => process.exit(code || 0))
+    .catch((err) => {
+      console.error(`❌ ${err?.message || err}`);
+      process.exit(1);
+    });
+  return;
+}
+
 // Self-heal SQLite runtime deps (sql.js + better-sqlite3) into ~/.9router/runtime
 // so the server can resolve them via NODE_PATH. Best-effort — sql.js is required,
 // better-sqlite3 is optional. Logs to stderr only on failure.
@@ -142,7 +154,7 @@ for (let i = 0; i < args.length; i++) {
     process.env.TRAY_MODE = "1";
   } else if (args[i] === "--help" || args[i] === "-h") {
     console.log(`
-Usage: ${APP_NAME} [options]
+Usage: ${APP_NAME} [options] [command]
 
 Options:
   -p, --port <port>   Port to run the server (default: ${DEFAULT_PORT})
@@ -155,6 +167,7 @@ Options:
   -v, --version       Show version
 
 Commands:
+  update              Update ${APP_NAME} to the latest version
   xai video --prompt "..." --output video.mp4
                       Generate a Grok Imagine video via the running gateway
                       (see: ${APP_NAME} xai video --help)
@@ -525,6 +538,7 @@ async function showInterfaceMenu() {
   const menuItems = [
     { label: "Web UI (Open in Browser)", icon: "🌐" },
     { label: "Terminal UI (Interactive CLI)", icon: "💻" },
+    { label: "Check for Updates", icon: "⬆" },
     { label: "Hide to Tray (Background)", icon: "🔔" },
     { label: "Exit", icon: "🚪" }
   ];
@@ -533,7 +547,8 @@ async function showInterfaceMenu() {
 
   if (selected === 0) return "web";
   if (selected === 1) return "terminal";
-  if (selected === 2) return "hide";
+  if (selected === 2) return "update";
+  if (selected === 3) return "hide";
   return "exit";
 }
 
@@ -689,6 +704,11 @@ function startServer() {
           const { startTerminalUI } = require("./src/cli/terminalUI");
           await startTerminalUI(port);
           // Loop continues, show menu again
+        } else if (choice === "update") {
+          const { run } = require("./src/cli/commands/update");
+          await run();
+          const { pause } = require("./src/cli/utils/input");
+          await pause("\nPress Enter to return to menu...");
         } else if (choice === "hide") {
           const { clearScreen } = require("./src/cli/utils/display");
           clearScreen();

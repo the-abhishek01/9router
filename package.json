@@ -9,6 +9,7 @@
   },
   "scripts": {
     "aris": "node cli/cli.js",
+    "update": "node cli/cli.js update",
     "start:aris": "PORT=20128 node cli/app/custom-server.js",
     "build:cli": "node cli/scripts/build-cli.js",
     "dev": "next dev --port 20127",

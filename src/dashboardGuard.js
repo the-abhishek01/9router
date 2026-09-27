@@ -65,10 +65,15 @@ const PROTECTED_API_PATHS = [
   "/api/tags",
   "/api/mcp",
   "/api/tunnel",
+  "/api/headroom",
+  "/api/pxpipe",
+  "/api/cli-tools",
 ];
 
 // Routes that spawn child processes or read host secrets — restrict to localhost.
 const LOCAL_ONLY_PATHS = [
+  "/api/cli-tools/antigravity-mitm",
+  "/api/cli-tools/cowork-settings",
   "/api/mcp/",
   "/api/tunnel/tailscale-install",
   "/api/tunnel/tailscale-enable",
@@ -79,6 +84,9 @@ const LOCAL_ONLY_PATHS = [
   "/api/oauth/cursor/auto-import",
   "/api/oauth/kiro/auto-import",
   "/api/auth/reset-password",
+  "/api/headroom/start",
+  "/api/headroom/stop",
+  "/api/headroom/proxy",
 ];
 
 const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
